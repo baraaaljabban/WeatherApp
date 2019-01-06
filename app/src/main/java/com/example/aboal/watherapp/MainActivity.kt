@@ -24,15 +24,30 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
 
 
+    private lateinit var mLayoutManager : LinearLayoutManager
+
+    companion object {
+        var weatherResult= ArrayList<WeatherResult>()
+        var cityWeatherAdapter = CityWeatherAdapter(weatherResult)
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         handleIntent(intent)
 
+        initView()
 
     }
 
+
+    fun initView (){
+        mLayoutManager = LinearLayoutManager(this)
+        city_recycler_view.layoutManager = mLayoutManager
+        city_recycler_view.adapter = cityWeatherAdapter
+    }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
 
@@ -54,39 +69,9 @@ class MainActivity : AppCompatActivity() {
 
         if (Intent.ACTION_SEARCH == intent.action) {
             val query = intent.getStringExtra(SearchManager.QUERY)
-            getCityWeather(this,query)
+            WeatherService.getCityWeather(this,query)
         }
 
-    }
-
-    fun getCityWeather(context : Context,cityName : String){
-        val queue = Volley.newRequestQueue(context)
-        val url = WeatherAPI.BaseURL+cityName+WeatherAPI.APP_ID
-        val jsonObjReq = JsonObjectRequest(
-            Request.Method.GET,
-            url, null,
-            Response.Listener { response ->
-                val gson = Gson()
-                val result = gson.fromJson<WeatherResult>(response.toString(), WeatherResult::class.java)
-                inflator(result)
-            }, Response.ErrorListener {
-                Toast.makeText(context, R.string.didNotWrok,Toast.LENGTH_LONG).show()
-            })
-        queue.add(jsonObjReq)
-    }
-
-    fun inflator(result : WeatherResult){
-        name.text = result.name
-        base.text = result.base
-        cod.text = result.cod.toString()
-        id.text     = result.id.toString()
-        dt.text     = result.dt.toString()
-        coord.text      = result.name
-        visibility.text = result.visibility.toString()
-        sys_type.text = result.visibility.toString()
-        clouds.text = result.wind?.speed.toString()
-        wind_speed.text = result.clouds?.all.toString()
-        main_temp.text = result.main?.pressure.toString()
     }
 
 
